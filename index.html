@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SeMS Pre-Certification Self Assessment | IATA</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --blue: #185FA5; --blue-light: #E6F1FB; --blue-mid: #378ADD;
+    --teal: #0F6E56; --teal-light: #E1F5EE; --teal-mid: #1D9E75;
+    --amber: #854F0B; --amber-light: #FAEEDA; --amber-mid: #EF9F27;
+    --red: #A32D2D; --red-light: #FCEBEB; --red-mid: #E24B4A;
+    --green: #3B6D11; --green-light: #EAF3DE; --green-mid: #639922;
+    --gray: #5F5E5A; --gray-light: #F1EFE8; --gray-mid: #888780;
+    --text: #2C2C2A; --text-muted: #5F5E5A; --text-hint: #888780;
+    --bg: #ffffff; --bg2: #F7F6F2; --bg3: #F1EFE8;
+    --border: rgba(44,44,42,0.15); --border2: rgba(44,44,42,0.25);
+    --radius: 8px; --radius-lg: 12px;
+    --font: 'Arial', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); color: var(--text); background: var(--bg2); font-size: 15px; line-height: 1.6; }
+
+  /* NAV */
+  .nav { background: var(--blue); color: #fff; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .nav-brand { display: flex; align-items: center; gap: 12px; font-size: 16px; font-weight: 600; letter-spacing: 0.3px; }
+  .nav-badge { background: rgba(255,255,255,0.2); font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 400; letter-spacing: 0.5px; }
+  .nav-link { color: rgba(255,255,255,0.8); font-size: 13px; text-decoration: none; cursor: pointer; border: none; background: none; padding: 6px 12px; border-radius: 4px; transition: background 0.2s; }
+  .nav-link:hover { background: rgba(255,255,255,0.15); }
+
+  /* PAGES */
+  .page { display: none; min-height: calc(100vh - 60px); }
+  .page.active { display: block; }
+
+  /* LANDING */
+  .hero { background: linear-gradient(135deg, var(--blue) 0%, #0C447C 100%); color: #fff; padding: 60px 24px; text-align: center; }
+  .hero h1 { font-size: 28px; font-weight: 600; margin-bottom: 12px; }
+  .hero p { font-size: 16px; opacity: 0.85; max-width: 560px; margin: 0 auto 32px; }
+  .hero-meta { display: flex; justify-content: center; gap: 32px; margin-bottom: 40px; }
+  .hero-meta-item { font-size: 13px; opacity: 0.75; }
+  .hero-meta-item strong { display: block; font-size: 22px; font-weight: 600; opacity: 1; }
+  .btn { display: inline-block; padding: 12px 28px; border-radius: var(--radius); font-size: 15px; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; text-decoration: none; }
+  .btn-primary { background: #fff; color: var(--blue); }
+  .btn-primary:hover { background: #f0f0f0; }
+  .btn-blue { background: var(--blue); color: #fff; }
+  .btn-blue:hover { background: #0C447C; }
+  .btn-outline { background: transparent; color: var(--blue); border: 1.5px solid var(--blue); }
+  .btn-outline:hover { background: var(--blue-light); }
+
+  .content-wrap { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+  .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 32px 0; }
+  .info-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 20px; }
+  .info-card-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 12px; }
+  .info-card h3 { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+  .info-card p { font-size: 13px; color: var(--text-muted); }
+
+  /* ASSESSMENT FORM */
+  .form-header { background: var(--bg); border-bottom: 0.5px solid var(--border); padding: 20px 24px; position: sticky; top: 60px; z-index: 10; }
+  .progress-bar { height: 4px; background: var(--bg3); border-radius: 2px; margin-top: 10px; }
+  .progress-fill { height: 4px; background: var(--blue-mid); border-radius: 2px; transition: width 0.4s ease; }
+  .form-body { max-width: 760px; margin: 0 auto; padding: 32px 24px; }
+
+  .org-section { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 28px; }
+  .org-section h2 { font-size: 16px; font-weight: 500; margin-bottom: 16px; color: var(--text); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; }
+  .field input, .field select { width: 100%; padding: 8px 12px; border: 0.5px solid var(--border2); border-radius: var(--radius); font-size: 14px; font-family: var(--font); background: var(--bg); color: var(--text); }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--blue-mid); box-shadow: 0 0 0 3px rgba(55,138,221,0.15); }
+
+  .question-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 20px; transition: border-color 0.2s; }
+  .question-card.answered { border-color: rgba(29,158,117,0.4); }
+  .q-header { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 16px; }
+  .q-num { min-width: 28px; height: 28px; border-radius: 50%; background: var(--blue-light); color: var(--blue); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+  .q-theme { font-size: 12px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .q-text { font-size: 15px; color: var(--text); line-height: 1.55; }
+  .q-core { font-size: 11px; color: var(--text-hint); margin-top: 4px; }
+  .rating-options { display: flex; gap: 8px; flex-wrap: wrap; }
+  .rating-btn { flex: 1; min-width: 120px; padding: 10px 8px; border: 1.5px solid var(--border2); border-radius: var(--radius); font-size: 12px; font-weight: 500; cursor: pointer; background: var(--bg); color: var(--text-muted); text-align: center; transition: all 0.18s; line-height: 1.3; }
+  .rating-btn:hover { border-color: var(--blue-mid); color: var(--blue); background: var(--blue-light); }
+  .rating-btn.selected-1 { background: var(--red-light); border-color: var(--red-mid); color: var(--red); }
+  .rating-btn.selected-3 { background: var(--amber-light); border-color: var(--amber-mid); color: var(--amber); }
+  .rating-btn.selected-4 { background: var(--blue-light); border-color: var(--blue-mid); color: var(--blue); }
+  .rating-btn.selected-5 { background: var(--green-light); border-color: var(--green-mid); color: var(--green); }
+  .rating-label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 2px; }
+  .rating-desc { font-size: 11px; opacity: 0.8; display: block; }
+
+  .form-footer { display: flex; gap: 12px; justify-content: flex-end; margin-top: 32px; padding-top: 24px; border-top: 0.5px solid var(--border); }
+
+  /* RESULT PAGE */
+  .result-wrap { max-width: 780px; margin: 0 auto; padding: 32px 24px; }
+  .result-hero { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 32px; margin-bottom: 24px; text-align: center; }
+  .result-badge { display: inline-block; padding: 6px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 16px; }
+  .result-score { font-size: 48px; font-weight: 600; margin-bottom: 8px; }
+  .result-label { font-size: 22px; font-weight: 500; margin-bottom: 12px; }
+  .result-desc { font-size: 14px; color: var(--text-muted); max-width: 540px; margin: 0 auto; }
+  .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .result-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 20px; }
+  .result-card h3 { font-size: 14px; font-weight: 500; color: var(--text-muted); margin-bottom: 16px; }
+  .score-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; }
+  .score-row-label { flex: 1; color: var(--text); }
+  .score-bar-track { width: 80px; height: 6px; background: var(--bg3); border-radius: 3px; }
+  .score-bar-fill { height: 6px; border-radius: 3px; }
+  .score-pct { min-width: 36px; text-align: right; font-weight: 500; font-size: 12px; }
+
+  /* ADMIN PAGE */
+  .admin-login { max-width: 380px; margin: 80px auto; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 36px; }
+  .admin-login h2 { font-size: 20px; font-weight: 500; margin-bottom: 6px; }
+  .admin-login p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+  .admin-wrap { padding: 24px; }
+  .admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+  .admin-header h2 { font-size: 20px; font-weight: 500; }
+  .admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .stat-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .stat-label { font-size: 12px; color: var(--text-hint); margin-bottom: 6px; }
+  .stat-value { font-size: 24px; font-weight: 500; color: var(--text); }
+  .stat-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+  .chart-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 20px; }
+  .chart-card h3 { font-size: 14px; font-weight: 500; color: var(--text-muted); margin-bottom: 16px; }
+  .table-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 20px; }
+  .table-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 0.5px solid var(--border); }
+  .table-head h3 { font-size: 14px; font-weight: 500; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--bg2); padding: 10px 16px; text-align: left; font-size: 12px; font-weight: 500; color: var(--text-muted); border-bottom: 0.5px solid var(--border); }
+  td { padding: 10px 16px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg2); }
+  .pill { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .pill-nd { background: var(--red-light); color: var(--red); }
+  .pill-suitable { background: var(--amber-light); color: var(--amber); }
+  .pill-operating { background: var(--blue-light); color: var(--blue); }
+  .pill-effective { background: var(--green-light); color: var(--green); }
+  .expand-btn { background: none; border: none; cursor: pointer; font-size: 12px; color: var(--blue); padding: 4px 8px; border-radius: 4px; }
+  .expand-btn:hover { background: var(--blue-light); }
+  .detail-row { display: none; }
+  .detail-row.open { display: table-row; }
+  .detail-row td { background: var(--bg2); padding: 16px 20px; }
+  .detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+  .detail-item { font-size: 12px; }
+  .detail-item strong { display: block; color: var(--text-muted); font-weight: 500; margin-bottom: 2px; }
+  .error-msg { background: var(--red-light); color: var(--red); padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-top: 10px; display: none; }
+  .export-btn { background: var(--bg2); border: 0.5px solid var(--border2); color: var(--text); padding: 7px 16px; border-radius: var(--radius); font-size: 13px; cursor: pointer; font-weight: 500; }
+  .export-btn:hover { background: var(--bg3); }
+
+  @media (max-width: 600px) {
+    .field-row { grid-template-columns: 1fr; }
+    .result-grid, .chart-grid { grid-template-columns: 1fr; }
+    .hero-meta { gap: 16px; }
+    .rating-options { flex-direction: column; }
+    .rating-btn { min-width: auto; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="6" fill="rgba(255,255,255,0.2)"/><path d="M8 20L14 8l6 12" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 16h8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+    SeMS Pre-Certification
+    <span class="nav-badge">IATA v3.0</span>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="nav-link" onclick="showPage('landing')">Assessment</button>
+    <button class="nav-link" onclick="showPage('admin-gate')">Admin</button>
+  </div>
+</nav>
+
+<!-- LANDING PAGE -->
+<div id="page-landing" class="page active">
+  <div class="hero">
+    <h1>Security Management System<br>Pre-Certification Self Assessment</h1>
+    <p>Predict your likely SeMS certification outcome by completing 15 anchoring questions aligned to IATA's core security management components.</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><strong>15</strong>Questions</div>
+      <div class="hero-meta-item"><strong>~10</strong>Minutes</div>
+      <div class="hero-meta-item"><strong>4</strong>Maturity levels</div>
+      <div class="hero-meta-item"><strong>10</strong>Core components</div>
+    </div>
+    <button class="btn btn-primary" onclick="showPage('assessment')">Start Assessment</button>
+  </div>
+  <div class="content-wrap">
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-card-icon" style="background:var(--blue-light)">📋</div>
+        <h3>What is SeMS?</h3>
+        <p>The IATA Security Management System Certification programme assesses an operator's systematic approach to managing aviation security.</p>
+      </div>
+      <div class="info-card">
+        <div class="info-card-icon" style="background:var(--teal-light)">🔍</div>
+        <h3>Predictive anchors</h3>
+        <p>15 carefully selected questions that anchor maturity across the 10 SeMS core components and reliably predict full certification outcomes.</p>
+      </div>
+      <div class="info-card">
+        <div class="info-card-icon" style="background:var(--amber-light)">📊</div>
+        <h3>Instant results</h3>
+        <p>Receive an immediate predicted certification level — Needs Development, Suitable, Operating or Effective — with component breakdown.</p>
+      </div>
+      <div class="info-card">
+        <div class="info-card-icon" style="background:var(--green-light)">🔒</div>
+        <h3>Fully anonymous</h3>
+        <p>No organisation-specific data is collected or stored. All context fields are optional and used only to help you interpret your own results.</p>
+      </div>
+    </div>
+
+    <div style="background:var(--green-light);border-radius:var(--radius-lg);padding:20px 24px;border-left:4px solid var(--green-mid);margin-bottom:16px;display:flex;gap:14px;align-items:flex-start">
+      <div style="font-size:20px;line-height:1;margin-top:2px">🔒</div>
+      <div>
+        <div style="font-size:14px;font-weight:600;color:var(--green);margin-bottom:4px">Your privacy is protected</div>
+        <p style="font-size:13px;color:var(--teal);line-height:1.6">This assessment is <strong>completely anonymous</strong>. We do not collect, store, or share any organisation-specific information. Any context you choose to provide (operator type, region) is optional and exists only to help you interpret your own results — it is never linked to your identity or organisation.</p>
+      </div>
+    </div>
+
+    <div style="background:var(--blue-light);border-radius:var(--radius-lg);padding:20px;border-left:4px solid var(--blue-mid)">
+      <p style="font-size:14px;color:var(--blue);"><strong>Note:</strong> This tool is a predictive indicator only. It does not replace the full IATA SeMS Certification assessment, which involves a comprehensive checklist and formal audit process.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ASSESSMENT PAGE -->
+<div id="page-assessment" class="page">
+  <div class="form-header">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:13px;color:var(--text-muted)">SeMS Pre-Certification Self Assessment</div>
+        <div style="font-size:12px;color:var(--text-hint);margin-top:2px" id="progress-text">0 of 15 questions answered</div>
+      </div>
+      <div style="font-size:13px;font-weight:500;color:var(--blue)" id="progress-pct">0%</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+  <div class="form-body">
+    <div style="background:var(--green-light);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:20px;display:flex;gap:12px;align-items:flex-start;border:0.5px solid rgba(63,109,17,0.25)">
+      <div style="font-size:18px;line-height:1;margin-top:2px">🔒</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:3px">This assessment is fully anonymous</div>
+        <div style="font-size:13px;color:var(--teal);line-height:1.55">We do <strong>not</strong> collect or store any organisation-specific information. The optional fields below are only used to help you contextualise your own results on screen — they are never transmitted, stored, or linked to your identity.</div>
+      </div>
+    </div>
+
+    <div class="org-section">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <h2 style="margin-bottom:0">Optional context</h2>
+        <span style="font-size:12px;color:var(--text-hint);background:var(--bg2);padding:3px 10px;border-radius:12px;border:0.5px solid var(--border)">All fields optional</span>
+      </div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Providing context helps you interpret your results. None of this information identifies you or your organisation.</p>
+      <div class="field-row">
+        <div class="field">
+          <label>Region <span style="font-weight:400;color:var(--text-hint)">(optional)</span></label>
+          <select id="org-country">
+            <option value="">— Select region —</option>
+            <option>Africa</option>
+            <option>Asia Pacific</option>
+            <option>Europe</option>
+            <option>Latin America &amp; Caribbean</option>
+            <option>Middle East</option>
+            <option>North America</option>
+            <option>South Asia</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Operator type <span style="font-weight:400;color:var(--text-hint)">(optional)</span></label>
+          <select id="org-type">
+            <option value="">— Select type —</option>
+            <option>Airline / Air Carrier</option>
+            <option>Airport Operator</option>
+            <option>Ground Handling Agent</option>
+            <option>Cargo / Freight Operator</option>
+            <option>Other Aviation Operator</option>
+          </select>
+        </div>
+      </div>
+      <input type="hidden" id="org-name" value="Anonymous">
+      <input type="hidden" id="org-code" value="">
+      <input type="hidden" id="org-contact" value="">
+    </div>
+
+    <div id="questions-container"></div>
+
+    <div class="form-footer">
+      <button class="btn btn-outline" onclick="showPage('landing')">Back</button>
+      <button class="btn btn-blue" onclick="submitAssessment()">Submit &amp; View Results</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT PAGE -->
+<div id="page-result" class="page">
+  <div class="result-wrap">
+    <div class="result-hero" id="result-hero"></div>
+    <div class="result-grid">
+      <div class="result-card">
+        <h3>Component scores</h3>
+        <div id="component-scores"></div>
+      </div>
+      <div class="result-card">
+        <h3>Score distribution</h3>
+        <canvas id="result-chart" height="220"></canvas>
+      </div>
+    </div>
+    <div class="result-card" style="margin-bottom:24px">
+      <h3 style="margin-bottom:16px">Your responses</h3>
+      <div id="result-responses"></div>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-outline" onclick="showPage('landing')">Take another assessment</button>
+      <button class="btn btn-blue" onclick="showPage('admin-gate')">Admin dashboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN GATE -->
+<div id="page-admin-gate" class="page">
+  <div class="admin-login">
+    <h2>Admin access</h2>
+    <p>Enter the admin password to view assessment responses and analytics.</p>
+    <div class="field"><label>Password</label><input type="password" id="admin-pw" placeholder="Enter password" onkeyup="if(event.key==='Enter')checkAdmin()"></div>
+    <div class="error-msg" id="pw-error">Incorrect password. Please try again.</div>
+    <button class="btn btn-blue" style="width:100%;margin-top:8px" onclick="checkAdmin()">Sign in</button>
+    <div style="margin-top:16px;text-align:center"><button class="btn btn-outline" style="font-size:13px;padding:8px 20px" onclick="showPage('landing')">Back to assessment</button></div>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div id="page-admin" class="page">
+  <div class="admin-wrap">
+    <div class="admin-header">
+      <div>
+        <h2>Assessment dashboard</h2>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:2px">SeMS Pre-Certification — all submissions</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="export-btn" onclick="exportCSV()">Export CSV</button>
+        <button class="btn btn-outline" style="font-size:13px;padding:8px 16px" onclick="showPage('landing')">Back</button>
+      </div>
+    </div>
+    <div class="admin-stats" id="admin-stats"></div>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>Predicted outcomes</h3><canvas id="admin-pie" height="200"></canvas></div>
+      <div class="chart-card"><h3>Average score by component</h3><canvas id="admin-bar" height="200"></canvas></div>
+    </div>
+    <div class="table-card">
+      <div class="table-head">
+        <h3>Individual responses</h3>
+        <span style="font-size:12px;color:var(--text-hint)" id="table-count"></span>
+      </div>
+      <div style="overflow-x:auto">
+        <table id="admin-table">
+          <thead><tr>
+            <th>Respondent</th><th>Operator type</th><th>Region</th><th>Submitted</th>
+            <th>Score</th><th>Predicted outcome</th><th></th>
+          </tr></thead>
+          <tbody id="admin-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ADMIN_PASSWORD = 'SeMS2024Admin';
+
+const QUESTIONS = [
+  { id:1, num:1, theme:'Leadership & Head of Security authority', text:'Has the Head of Security been formally designated with direct access to the Accountable Executive and authority to allocate resources for the SeMS?', core:1, weight:2 },
+  { id:2, num:2, theme:'SeMS Policy and Governance Framework', text:'Is there a formally approved SeMS Policy that defines objectives, scope, and responsibilities, endorsed by senior management?', core:1, weight:2.5 },
+  { id:3, num:3, theme:'Risk Assessment Methodology', text:'Has the operator established and applied a documented methodology for identifying, assessing, and prioritizing security risks?', core:2, weight:3 },
+  { id:4, num:4, theme:'Occurrence Reporting and Just Culture', text:'Is there a confidential and non-punitive occurrence reporting system available to all staff, and are reports analyzed for trend and learning purposes?', core:3, weight:3 },
+  { id:5, num:5, theme:'Corrective Action and Root Cause Analysis', text:'Are nonconformities subject to formal corrective action with root cause analysis, assignment of responsibility, and verification of closure?', core:3, weight:2 },
+  { id:6, num:6, theme:'Performance Monitoring and KPIs', text:'Has the organization established and tracks performance indicators (KPIs) to measure SeMS effectiveness and report trends to management?', core:4, weight:3 },
+  { id:7, num:7, theme:'Management Review', text:'Does senior management conduct periodic SeMS management reviews that evaluate performance, risks, and improvement opportunities?', core:1, weight:2.5 },
+  { id:8, num:8, theme:'Change Management', text:'Is there a process for assessing and managing security risks associated with operational or organizational changes (new routes, aircraft, or technologies)?', core:2, weight:2 },
+  { id:9, num:9, theme:'Training and Competence Effectiveness', text:'Are personnel trained and periodically assessed for competence related to their security responsibilities and the effectiveness of training evaluated?', core:5, weight:2 },
+  { id:10, num:10, theme:'Oversight of Outsourced Providers', text:'Does the operator perform oversight and verification of outsourced service providers and contractors performing security functions?', core:6, weight:3 },
+  { id:11, num:11, theme:'Documentation and Record Control', text:'Are SeMS documents and records controlled to ensure only current versions are used and records retained per policy?', core:7, weight:2 },
+  { id:12, num:12, theme:'Incident Response and Escalation', text:'Is there a defined process for security incident escalation, including 24/7 duty arrangements and communication to relevant authorities?', core:8, weight:2 },
+  { id:13, num:13, theme:'Information Security and Confidentiality', text:'Are measures in place to protect sensitive security information (SSI) and ensure it is shared on a need-to-know basis?', core:9, weight:2 },
+  { id:14, num:14, theme:'Screening, Quality Control & OSS', text:'Does the operator maintain a quality control programme including tests, audits, and participation in One-Stop Security or mutual recognition arrangements?', core:10, weight:2 },
+  { id:15, num:15, theme:'Emergency and Contingency Planning', text:'Are emergency and contingency plans in place, tested, and coordinated with airport and state authorities (e.g., for unlawful interference events)?', core:8, weight:2 },
+];
+
+const RATINGS = [
+  { score:1, label:'Needs Development', short:'ND', desc:'No or little evidence' },
+  { score:3, label:'Suitable', short:'SU', desc:'Begun but incomplete' },
+  { score:4, label:'Operating', short:'OP', desc:'Implemented, room to improve' },
+  { score:5, label:'Effective', short:'EF', desc:'Fully implemented & improving' },
+];
+
+const LEVELS = {
+  'Needs Development': { min:0, max:45, color:'var(--red)', bg:'var(--red-light)', pill:'pill-nd', desc:'The assessment indicates significant gaps remain before SeMS certification would be recommended. Core processes and documentation require substantial development.' },
+  'Suitable': { min:45, max:65, color:'var(--amber)', bg:'var(--amber-light)', pill:'pill-suitable', desc:'The assessment suggests foundational elements are in place but key areas remain incomplete. Targeted improvements across several components are needed before pursuing full certification.' },
+  'Operating': { min:65, max:82, color:'var(--blue)', bg:'var(--blue-light)', pill:'pill-operating', desc:'The assessment indicates the SeMS is substantially implemented and operating as intended. Some opportunities for improvement exist before the system can be considered fully effective.' },
+  'Effective': { min:82, max:101, color:'var(--green)', bg:'var(--green-light)', pill:'pill-effective', desc:'The assessment suggests a mature SeMS with strong evidence of continuous improvement and proactive security management. The organisation appears well-positioned for full certification.' },
+};
+
+const CORE_NAMES = {1:'Governance & Leadership',2:'Risk Management',3:'Occurrence & Corrective Action',4:'Performance Monitoring',5:'Training & Competence',6:'Outsourced Providers',7:'Documentation',8:'Incident & Emergency',9:'Information Security',10:'Screening & Quality'};
+
+let responses = {};
+let submissions = JSON.parse(localStorage.getItem('sems_submissions') || '[]');
+let adminCharts = {};
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  window.scrollTo(0,0);
+  if (id === 'admin') renderAdmin();
+}
+
+function checkAdmin() {
+  const pw = document.getElementById('admin-pw').value;
+  if (pw === ADMIN_PASSWORD) { showPage('admin'); document.getElementById('admin-pw').value=''; document.getElementById('pw-error').style.display='none'; }
+  else { document.getElementById('pw-error').style.display='block'; }
+}
+
+// Build questions
+function buildQuestions() {
+  const container = document.getElementById('questions-container');
+  container.innerHTML = '';
+  QUESTIONS.forEach(q => {
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.id = 'q-card-' + q.id;
+    card.innerHTML = `
+      <div class="q-header">
+        <div class="q-num">${q.num}</div>
+        <div style="flex:1">
+          <div class="q-theme">${q.theme}</div>
+          <div class="q-text">${q.text}</div>
+          <div class="q-core">Core component ${q.core}: ${CORE_NAMES[q.core]}</div>
+        </div>
+      </div>
+      <div class="rating-options">
+        ${RATINGS.map(r => `<button class="rating-btn" data-q="${q.id}" data-score="${r.score}" onclick="selectRating(${q.id},${r.score},this)">
+          <span class="rating-label">${r.label}</span>
+          <span class="rating-desc">${r.desc}</span>
+        </button>`).join('')}
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+function selectRating(qId, score, btn) {
+  responses[qId] = score;
+  const card = document.getElementById('q-card-' + qId);
+  card.querySelectorAll('.rating-btn').forEach(b => b.className = 'rating-btn');
+  const cls = score === 1 ? 'selected-1' : score === 3 ? 'selected-3' : score === 4 ? 'selected-4' : 'selected-5';
+  btn.className = 'rating-btn ' + cls;
+  card.classList.add('answered');
+  updateProgress();
+}
+
+function updateProgress() {
+  const n = Object.keys(responses).length;
+  const pct = Math.round((n/15)*100);
+  document.getElementById('progress-text').textContent = n + ' of 15 questions answered';
+  document.getElementById('progress-pct').textContent = pct + '%';
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function calcResult(resp) {
+  let totalWeighted = 0, totalWeight = 0;
+  const byCore = {};
+  QUESTIONS.forEach(q => {
+    const s = resp[q.id] || 0;
+    if (!s) return;
+    totalWeighted += s * q.weight;
+    totalWeight += q.weight * 5;
+    if (!byCore[q.core]) byCore[q.core] = { sum:0, w:0 };
+    byCore[q.core].sum += s * q.weight;
+    byCore[q.core].w += q.weight * 5;
+  });
+  const pct = totalWeight > 0 ? (totalWeighted / totalWeight) * 100 : 0;
+  const corePcts = {};
+  Object.keys(byCore).forEach(c => { corePcts[c] = Math.round((byCore[c].sum / byCore[c].w) * 100); });
+  let level = 'Needs Development';
+  for (const [l, cfg] of Object.entries(LEVELS)) { if (pct >= cfg.min && pct < cfg.max) { level = l; break; } }
+  return { pct: Math.round(pct), level, corePcts };
+}
+
+function submitAssessment() {
+  const missing = QUESTIONS.filter(q => !responses[q.id]);
+  if (missing.length > 0) {
+    missing.forEach(q => { const c = document.getElementById('q-card-'+q.id); c.style.borderColor='var(--red-mid)'; c.scrollIntoView({behavior:'smooth',block:'center'}); });
+    setTimeout(()=>missing.forEach(q=>document.getElementById('q-card-'+q.id).style.borderColor=''),3000);
+    return;
+  }
+  const orgName = 'Anonymous';
+  const orgCountry = document.getElementById('org-country').value.trim();
+  const orgType = document.getElementById('org-type').value;
+
+  const result = calcResult(responses);
+  const submission = {
+    id: Date.now(),
+    org: orgName, code: document.getElementById('org-code').value.trim(),
+    country: orgCountry, type: orgType,
+    contact: document.getElementById('org-contact').value.trim(),
+    submitted: new Date().toISOString(),
+    responses: { ...responses },
+    pct: result.pct, level: result.level, corePcts: result.corePcts,
+  };
+  submissions.push(submission);
+  localStorage.setItem('sems_submissions', JSON.stringify(submissions));
+  showResultPage(result);
+}
+
+function showResultPage(result) {
+  const cfg = LEVELS[result.level];
+  const hero = document.getElementById('result-hero');
+  hero.innerHTML = `
+    <span class="result-badge ${Object.entries(LEVELS).find(([k])=>k===result.level)[1]?.[' pill'] || 'pill-'+result.level.toLowerCase().replace(' ','-')}" style="background:${cfg.bg};color:${cfg.color}">${result.level}</span>
+    <div class="result-score" style="color:${cfg.color}">${result.pct}%</div>
+    <div class="result-label">Predicted: <strong>${result.level}</strong></div>
+    <div class="result-desc">${cfg.desc}</div>`;
+
+  const csEl = document.getElementById('component-scores');
+  csEl.innerHTML = Object.entries(result.corePcts).map(([c,p]) => `
+    <div class="score-row">
+      <div class="score-row-label" style="font-size:12px">${CORE_NAMES[c]}</div>
+      <div class="score-bar-track"><div class="score-bar-fill" style="width:${p}%;background:${p>=82?'var(--green-mid)':p>=65?'var(--blue-mid)':p>=45?'var(--amber-mid)':'var(--red-mid)'}"></div></div>
+      <div class="score-pct" style="color:${p>=82?'var(--green)':p>=65?'var(--blue)':p>=45?'var(--amber)':'var(--red)'}">${p}%</div>
+    </div>`).join('');
+
+  const ctx = document.getElementById('result-chart').getContext('2d');
+  new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: Object.values(CORE_NAMES).map(n => n.length > 18 ? n.split(' ').slice(0,2).join(' ') : n),
+      datasets: [{ label:'Your score', data: Object.values(result.corePcts), backgroundColor:'rgba(55,138,221,0.15)', borderColor:'rgba(55,138,221,0.8)', borderWidth:2, pointBackgroundColor:'rgba(55,138,221,0.8)' }]
+    },
+    options: { scales: { r: { min:0, max:100, ticks:{ stepSize:25, font:{size:10} }, pointLabels:{ font:{size:10} } } }, plugins:{ legend:{display:false} } }
+  });
+
+  const rrEl = document.getElementById('result-responses');
+  rrEl.innerHTML = QUESTIONS.map(q => {
+    const s = responses[q.id]; const r = RATINGS.find(x=>x.score===s);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--border);font-size:13px">
+      <span style="color:var(--text-muted)">${q.num}. ${q.theme}</span>
+      <span class="pill ${s===1?'pill-nd':s===3?'pill-suitable':s===4?'pill-operating':'pill-effective'}">${r?.label||'—'}</span>
+    </div>`;
+  }).join('');
+
+  showPage('result');
+}
+
+function renderAdmin() {
+  const n = submissions.length;
+  document.getElementById('table-count').textContent = n + ' submission' + (n===1?'':'s');
+
+  // Stats
+  const avgPct = n ? Math.round(submissions.reduce((a,s)=>a+s.pct,0)/n) : 0;
+  const levelCounts = {};
+  submissions.forEach(s => { levelCounts[s.level] = (levelCounts[s.level]||0)+1; });
+  const topLevel = Object.entries(levelCounts).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('admin-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Total submissions</div><div class="stat-value">${n}</div></div>
+    <div class="stat-card"><div class="stat-label">Average score</div><div class="stat-value">${avgPct}%</div></div>
+    <div class="stat-card"><div class="stat-label">Most common outcome</div><div class="stat-value" style="font-size:16px">${topLevel?topLevel[0]:'—'}</div><div class="stat-sub">${topLevel?topLevel[1]+' submissions':''}</div></div>
+    <div class="stat-card"><div class="stat-label">Operator types</div><div class="stat-value">${new Set(submissions.map(s=>s.type)).size}</div><div class="stat-sub">unique types</div></div>`;
+
+  // Destroy old charts
+  if (adminCharts.pie) { adminCharts.pie.destroy(); }
+  if (adminCharts.bar) { adminCharts.bar.destroy(); }
+
+  // Pie chart
+  const levels = ['Needs Development','Suitable','Operating','Effective'];
+  const pieCtx = document.getElementById('admin-pie').getContext('2d');
+  adminCharts.pie = new Chart(pieCtx, {
+    type: 'doughnut',
+    data: {
+      labels: levels,
+      datasets: [{ data: levels.map(l => levelCounts[l]||0), backgroundColor:['#F09595','#FAC775','#85B7EB','#97C459'], borderWidth:0 }]
+    },
+    options: { plugins:{ legend:{ position:'bottom', labels:{font:{size:11},boxWidth:12} } }, cutout:'60%' }
+  });
+
+  // Bar chart — avg score per core component
+  const coreTotals = {};
+  submissions.forEach(s => Object.entries(s.corePcts||{}).forEach(([c,p]) => { if (!coreTotals[c]) coreTotals[c]=[]; coreTotals[c].push(p); }));
+  const coreAvgs = Object.keys(CORE_NAMES).map(c => coreTotals[c] ? Math.round(coreTotals[c].reduce((a,v)=>a+v,0)/coreTotals[c].length) : 0);
+  const barCtx = document.getElementById('admin-bar').getContext('2d');
+  adminCharts.bar = new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: Object.values(CORE_NAMES).map(n => n.split(' ').slice(0,2).join(' ')),
+      datasets: [{ label:'Avg %', data: coreAvgs, backgroundColor:'rgba(55,138,221,0.7)', borderRadius:4, borderWidth:0 }]
+    },
+    options: { scales:{ y:{ min:0,max:100, ticks:{font:{size:10}}, grid:{color:'rgba(0,0,0,0.05)'} }, x:{ ticks:{font:{size:10}} } }, plugins:{legend:{display:false}}, barThickness:18 }
+  });
+
+  // Table
+  const tbody = document.getElementById('admin-tbody');
+  tbody.innerHTML = '';
+  [...submissions].reverse().forEach((s, i) => {
+    const idx = submissions.length - 1 - i;
+    const tr = document.createElement('tr');
+    const d = new Date(s.submitted);
+    const dateStr = d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    const pillCls = s.level==='Needs Development'?'pill-nd':s.level==='Suitable'?'pill-suitable':s.level==='Operating'?'pill-operating':'pill-effective';
+    tr.innerHTML = `
+      <td><span style="font-size:12px;color:var(--text-hint);background:var(--bg2);padding:2px 8px;border-radius:10px;border:0.5px solid var(--border)">Anonymous</span></td>
+      <td style="color:var(--text-muted)">${s.type||'—'}</td>
+      <td>${s.country||'—'}</td>
+      <td style="font-size:12px;color:var(--text-muted)">${dateStr}</td>
+      <td><strong>${s.pct}%</strong></td>
+      <td><span class="pill ${pillCls}">${s.level}</span></td>
+      <td><button class="expand-btn" onclick="toggleDetail(${idx})">Details ▾</button></td>`;
+    tbody.appendChild(tr);
+    const detailTr = document.createElement('tr');
+    detailTr.className = 'detail-row';
+    detailTr.id = 'detail-' + idx;
+    const responses_html = QUESTIONS.map(q => {
+      const sc = s.responses[q.id]; const r = RATINGS.find(x=>x.score===sc);
+      return `<div class="detail-item"><strong>${q.num}. ${q.theme}</strong>${r?r.label:'—'}</div>`;
+    }).join('');
+    detailTr.innerHTML = `<td colspan="7"><div style="margin-bottom:10px;font-size:13px"><strong>Contact:</strong> ${s.contact||'—'}</div><div class="detail-grid">${responses_html}</div></td>`;
+    tbody.appendChild(detailTr);
+  });
+}
+
+function toggleDetail(idx) {
+  const row = document.getElementById('detail-'+idx);
+  row.classList.toggle('open');
+}
+
+function exportCSV() {
+  if (!submissions.length) { alert('No submissions to export.'); return; }
+  const headers = ['ID','Organisation','IATA Code','Country','Type','Contact','Submitted','Score %','Predicted Level',
+    ...QUESTIONS.map(q => q.num+'. '+q.theme)];
+  const rows = submissions.map(s => [
+    s.id, s.org, s.code, s.country, s.type, s.contact,
+    new Date(s.submitted).toISOString(), s.pct, s.level,
+    ...QUESTIONS.map(q => { const r = RATINGS.find(x=>x.score===s.responses[q.id]); return r?r.label:''; })
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(v => '"'+(String(v||'').replace(/"/g,'""'))+'"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = 'sems_assessment_responses_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
+// Reset form when going to assessment
+document.querySelector('button[onclick="showPage(\'assessment\')"]') && (function(){})();
+function initAssessment() { responses={}; buildQuestions(); updateProgress(); document.getElementById('org-country').value=''; document.getElementById('org-type').value=''; }
+
+// Patch showPage to init assessment
+const origShow = showPage;
+window.showPage = function(id) {
+  if (id==='assessment') initAssessment();
+  origShow(id);
+};
+
+buildQuestions();
+</script>
+</body>
+</html>
